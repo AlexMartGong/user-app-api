@@ -43,10 +43,13 @@ public class UserMapper {
             user.setEmail(updateDTO.getEmail());
         }
 
-        if (updateDTO.getPassword() != null) {
-            user.setPassword(updateDTO.getPassword());
-        }
+    }
 
+    public void updatePasswordEntity(String newPassword, User user) {
+        if (user == null || newPassword == null || newPassword.isBlank()) {
+            return;
+        }
+        user.setPassword(newPassword);
     }
 
 }
