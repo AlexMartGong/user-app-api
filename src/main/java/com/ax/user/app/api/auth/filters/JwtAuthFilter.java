@@ -1,6 +1,7 @@
 package com.ax.user.app.api.auth.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +15,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,8 +49,12 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         User user = (User) authResult.getPrincipal();
         Map<String, Object> body = new HashMap<>();
 
-        String originalInput = JWT_SECRET + "." + user.getUsername();
-        String token = Base64.getEncoder().encodeToString(originalInput.getBytes());
+        String token = Jwts.builder()
+                .subject(user.getUsername())
+                .signWith(SECRET_KEY)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 86400000))
+                .compact();
 
         body.put("token", token);
         body.put("username", user.getUsername());

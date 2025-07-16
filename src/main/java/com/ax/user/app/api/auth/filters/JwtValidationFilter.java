@@ -1,5 +1,7 @@
 package com.ax.user.app.api.auth.filters;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +14,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import static com.ax.user.app.api.auth.TokenJwtConfig.*;
@@ -33,23 +34,20 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         }
 
         String token = header.substring(7);
-        byte[] decodedTokenBytes = Base64.getDecoder().decode(token);
 
-        String decodeToken = new String(decodedTokenBytes);
-        String[] parts = decodeToken.split("\\.");
-        String secret = parts[0];
-        String username = parts[1];
+        try {
 
-        if (JWT_SECRET.equals(secret)) {
+            Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+
             List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
             grantedAuthorities.add(() -> "ROLE_USER");
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(claims.getSubject(), null, grantedAuthorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             chain.doFilter(request, response);
-        } else {
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid token");
+            response.getWriter().write("Invalid token: " + e.getMessage());
             response.setContentType(CONTENT_TYPE);
         }
 
