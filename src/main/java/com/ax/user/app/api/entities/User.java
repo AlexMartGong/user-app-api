@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -21,6 +23,9 @@ public class User {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @ManyToMany
+    private List<Role> roles;
 
     private String username;
     private String email;
