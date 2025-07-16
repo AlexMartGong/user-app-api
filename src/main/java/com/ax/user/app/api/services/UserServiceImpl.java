@@ -7,6 +7,7 @@ import com.ax.user.app.api.entities.User;
 import com.ax.user.app.api.mapper.UserMapper;
 import com.ax.user.app.api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreate) {
         User user = userMapper.toEntity(userCreate);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         return userMapper.toDTO(savedUser);
     }
