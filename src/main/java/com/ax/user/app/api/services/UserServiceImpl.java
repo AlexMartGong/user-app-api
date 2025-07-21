@@ -3,8 +3,10 @@ package com.ax.user.app.api.services;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
+import com.ax.user.app.api.entities.Role;
 import com.ax.user.app.api.entities.User;
 import com.ax.user.app.api.mapper.UserMapper;
+import com.ax.user.app.api.repositories.RoleRepository;
 import com.ax.user.app.api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +24,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,6 +44,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreate) {
         User user = userMapper.toEntity(userCreate);
+
+        Optional<Role> role = roleRepository.findByName("ROLE_USER");
+        role.ifPresent(value -> user.setRoles(List.of(value)));
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         return userMapper.toDTO(savedUser);
