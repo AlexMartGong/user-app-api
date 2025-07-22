@@ -14,7 +14,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -43,6 +48,7 @@ public class SpringSecurityConfig {
         http.addFilter(new JwtAuthFilter(authenticationManager()));
         http.addFilterBefore(new JwtValidationFilter(authenticationManager()), JwtAuthFilter.class);
         http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -51,7 +57,38 @@ public class SpringSecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        return null;
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Permitir todas las solicitudes de origen
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+
+        // Permitir todos los métodos HTTP
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        // Permitir headers específicos en las solicitudes
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization", "Content-Type", "X-Requested-With", "Accept",
+            "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"
+        ));
+
+        // Exponer headers específicos en las respuestas
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization", "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"
+        ));
+
+        // Permitir credenciales (cookies, headers de autorización)
+        configuration.setAllowCredentials(true);
+
+        // Tiempo de caché para preflight requests (en segundos)
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
 }
