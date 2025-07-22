@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
+
     public UserDTO toDTO(User user) {
         if (user == null) {
             return null;
@@ -43,13 +44,6 @@ public class UserMapper {
             user.setEmail(updateDTO.getEmail());
         }
 
-    }
-
-    public void updatePasswordEntity(String newPassword, User user) {
-        if (user == null || newPassword == null || newPassword.isBlank()) {
-            return;
-        }
-        user.setPassword(newPassword);
     }
 
 }

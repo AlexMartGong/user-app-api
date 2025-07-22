@@ -73,7 +73,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updatePassword(Long id, String oldPassword, String newPassword) {
-        return null;
+        User user = userRepository.findById(id).orElse(null);
+
+        if (user == null || !passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return null;
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        User updateUser = userRepository.save(user);
+        return userMapper.toDTO(updateUser);
     }
 }

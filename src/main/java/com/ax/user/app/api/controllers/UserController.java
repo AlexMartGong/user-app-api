@@ -3,6 +3,7 @@ package com.ax.user.app.api.controllers;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
+import com.ax.user.app.api.dto.user.UserUpdatePassDTO;
 import com.ax.user.app.api.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,18 @@ public class UserController {
         }
         userService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @Valid @RequestBody UserUpdatePassDTO passDTO, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(getValidationErrors(result));
+        }
+        UserDTO updateUser = userService.updatePassword(id, passDTO.getOldPassword(), passDTO.getNewPassword());
+        if (updateUser == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok("Password updated successfully");
     }
 
     private Map<String, String> getValidationErrors(BindingResult result) {
