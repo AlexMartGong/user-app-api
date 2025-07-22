@@ -28,13 +28,15 @@ public class SpringSecurityConfig {
 
     @Bean
     AuthenticationManager authenticationManager() throws Exception {
-            return authenticationConfiguration.getAuthenticationManager();
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(
-                        HttpMethod.GET, "/api/users").permitAll()
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated());
 
         http.addFilter(new JwtAuthFilter(authenticationManager()));
