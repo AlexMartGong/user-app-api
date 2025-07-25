@@ -19,4 +19,5 @@ public class UserDTO {
     private String username;
     private String email;
     private List<RoleDTO> roles;
+    private boolean admin;
 }

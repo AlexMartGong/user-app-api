@@ -31,4 +31,5 @@ public class UserCreateDTO {
     private String password;
 
     private List<RoleDTO> roles;
+    private boolean admin = false;
 }

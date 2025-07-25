@@ -29,6 +29,7 @@ public class UserMapper {
                 .roles(user.getRoles() != null ? user.getRoles().stream()
                         .map(roleMapper::toRoleDTO)
                         .collect(Collectors.toList()) : Collections.emptyList())
+                .admin(isUserAdmin(user))
                 .build();
     }
 
@@ -55,7 +56,11 @@ public class UserMapper {
         if (updateDTO.getEmail() != null) {
             user.setEmail(updateDTO.getEmail());
         }
+    }
 
+    private boolean isUserAdmin(User user) {
+        return user.getRoles() != null && user.getRoles().stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase("ROLE_ADMIN"));
     }
 
 }
