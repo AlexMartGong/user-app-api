@@ -59,30 +59,19 @@ public class SpringSecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Permitir todas las solicitudes de origen
         configuration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
-
-        // Permitir todos los métodos HTTP
         configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
-
-        // Permitir headers específicos en las solicitudes
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept",
-            "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"
+                "Authorization", "Content-Type", "X-Requested-With", "Accept",
+                "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"
         ));
-
-        // Exponer headers específicos en las respuestas
         configuration.setExposedHeaders(Arrays.asList(
-            "Authorization", "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Credentials"
+                "Authorization", "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
         ));
-
-        // Permitir credenciales (cookies, headers de autorización)
         configuration.setAllowCredentials(true);
-
-        // Tiempo de caché para preflight requests (en segundos)
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
