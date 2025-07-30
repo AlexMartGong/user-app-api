@@ -6,8 +6,18 @@ import com.ax.user.app.api.dto.user.UserUpdateDTO;
 import com.ax.user.app.api.entities.User;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 @Component
 public class UserMapper {
+
+    private final RoleMapper roleMapper;
+
+    public UserMapper(RoleMapper roleMapper) {
+        this.roleMapper = roleMapper;
+    }
+
     public UserDTO toDTO(User user) {
         if (user == null) {
             return null;
@@ -16,6 +26,10 @@ public class UserMapper {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .roles(user.getRoles() != null ? user.getRoles().stream()
+                        .map(roleMapper::toRoleDTO)
+                        .collect(Collectors.toList()) : Collections.emptyList())
+                .admin(isUserAdmin(user))
                 .build();
     }
 
@@ -42,14 +56,11 @@ public class UserMapper {
         if (updateDTO.getEmail() != null) {
             user.setEmail(updateDTO.getEmail());
         }
-
     }
 
-    public void updatePasswordEntity(String newPassword, User user) {
-        if (user == null || newPassword == null || newPassword.isBlank()) {
-            return;
-        }
-        user.setPassword(newPassword);
+    private boolean isUserAdmin(User user) {
+        return user.getRoles() != null && user.getRoles().stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase("ROLE_ADMIN"));
     }
 
 }

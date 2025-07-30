@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserUpdatePassDTO {
     @NotBlank(message = "Old password cannot be blank")
-    @Size(min = 6, max = 50, message = "Old password must be between 6 and 50 characters")
+    @Size(min = 6, max = 100, message = "Old password must be between 6 and 100 characters")
     private String oldPassword;
 
     @NotBlank(message = "New password cannot be blank")
-    @Size(min = 6, max = 50, message = "New password must be between 6 and 50 characters")
+    @Size(min = 6, max = 100, message = "New password must be between 6 and 100 characters")
     private String newPassword;
 }

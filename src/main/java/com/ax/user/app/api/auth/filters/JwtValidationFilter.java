@@ -9,12 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ax.user.app.api.auth.TokenJwtConfig.*;
 
@@ -39,10 +40,20 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
 
             Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
 
-            List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-            grantedAuthorities.add(() -> "ROLE_USER");
+            // Obtener las authorities del claim como lista de strings
+            @SuppressWarnings("unchecked")
+            List<String> authoritiesList = (List<String>) claims.get("authorities");
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(claims.getSubject(), null, grantedAuthorities);
+            Collection<GrantedAuthority> grantedAuthorities = authoritiesList.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+            // Convertir las strings a SimpleGrantedAuthority
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    claims.getSubject(),
+                    null,
+                    grantedAuthorities);
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             chain.doFilter(request, response);
         } catch (Exception e) {

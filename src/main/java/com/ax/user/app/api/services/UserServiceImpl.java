@@ -3,15 +3,19 @@ package com.ax.user.app.api.services;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
+import com.ax.user.app.api.entities.Role;
 import com.ax.user.app.api.entities.User;
 import com.ax.user.app.api.mapper.UserMapper;
+import com.ax.user.app.api.repositories.RoleRepository;
 import com.ax.user.app.api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,6 +45,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO createUser(UserCreateDTO userCreate) {
         User user = userMapper.toEntity(userCreate);
+
+        List<Role> userRoles = assignRoles(userCreate.isAdmin());
+        user.setRoles(userRoles);
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         return userMapper.toDTO(savedUser);
@@ -53,6 +62,9 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
+        List<Role> userRoles = assignRoles(userUpdate.isAdmin());
+        existingUser.setRoles(userRoles);
+
         userMapper.updateEntity(userUpdate, existingUser);
         User updatedUser = userRepository.save(existingUser);
         return userMapper.toDTO(updatedUser);
@@ -65,7 +77,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updatePassword(Long id, String oldPassword, String newPassword) {
-        return null;
+        User user = userRepository.findById(id).orElse(null);
+
+        if (user == null || !passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return null;
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        User updateUser = userRepository.save(user);
+        return userMapper.toDTO(updateUser);
+    }
+
+    private List<Role> assignRoles(boolean isAdmin) {
+        List<Role> roles = new ArrayList<>();
+        Optional<Role> userRole = roleRepository.findByName("ROLE_USER");
+        userRole.ifPresent(roles::add);
+        if (isAdmin) {
+            Optional<Role> adminRole = roleRepository.findByName("ROLE_ADMIN");
+            adminRole.ifPresent(roles::add);
+        }
+        return roles;
     }
 }

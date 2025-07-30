@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -28,8 +29,10 @@ public class JpaUserDetailsService implements UserDetailsService {
         Optional<com.ax.user.app.api.entities.User> userOptional = userRepository.findByUsername(username);
 
         if (userOptional.isPresent()) {
-            List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            com.ax.user.app.api.entities.User user = userOptional.get();
+            List<GrantedAuthority> grantedAuthorities = user.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .collect(Collectors.toList());
 
             return new User(
                     userOptional.get().getUsername(),
