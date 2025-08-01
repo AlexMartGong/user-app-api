@@ -1,5 +1,6 @@
 package com.ax.user.app.api.services;
 
+import com.ax.user.app.api.dto.PagedResponse;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
@@ -9,6 +10,8 @@ import com.ax.user.app.api.mapper.UserMapper;
 import com.ax.user.app.api.repositories.RoleRepository;
 import com.ax.user.app.api.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +91,26 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         User updateUser = userRepository.save(user);
         return userMapper.toDTO(updateUser);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<UserDTO> findAll(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<UserDTO> userDTOs = userPage.getContent().stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return PagedResponse.<UserDTO>builder()
+                .content(userDTOs)
+                .page(userPage.getNumber())
+                .size(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .empty(userPage.isEmpty())
+                .build();
     }
 
     private List<Role> assignRoles(boolean isAdmin) {

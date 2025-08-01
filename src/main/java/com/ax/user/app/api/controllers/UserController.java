@@ -1,5 +1,6 @@
 package com.ax.user.app.api.controllers;
 
+import com.ax.user.app.api.dto.PagedResponse;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
@@ -7,6 +8,9 @@ import com.ax.user.app.api.dto.user.UserUpdatePassDTO;
 import com.ax.user.app.api.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -24,7 +28,27 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<?> getUsers() {
+    public ResponseEntity<?> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+            Sort.by(sortBy).descending() :
+            Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        PagedResponse<UserDTO> users = userService.findAll(pageable);
+
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers() {
         List<UserDTO> users = userService.findAll();
         if (users.isEmpty()) {
             return ResponseEntity.noContent().build();

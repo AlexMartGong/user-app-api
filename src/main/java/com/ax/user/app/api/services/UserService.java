@@ -1,13 +1,17 @@
 package com.ax.user.app.api.services;
 
+import com.ax.user.app.api.dto.PagedResponse;
 import com.ax.user.app.api.dto.user.UserCreateDTO;
 import com.ax.user.app.api.dto.user.UserDTO;
 import com.ax.user.app.api.dto.user.UserUpdateDTO;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface UserService {
     List<UserDTO> findAll();
+
+    PagedResponse<UserDTO> findAll(Pageable pageable);
 
     UserDTO findById(Long id);
 
